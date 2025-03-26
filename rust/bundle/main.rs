@@ -43,7 +43,7 @@ fn build(pkg: Option<&str>, is_release: bool, features: Vec<String>) {
     cmd.args(["build"])
         .args(["--lib"])
         .args(["--features", &features])
-        .args(["--target", "wasm32-unknown-unknown"])
+        .args(["--target", "wasm64-unknown-unknown"])
         .args(["-Z", "build-std=std,panic_abort"])
         .args(["-Z", "build-std-features=panic_immediate_abort"]);
 
@@ -60,7 +60,7 @@ fn build(pkg: Option<&str>, is_release: bool, features: Vec<String>) {
 
 /// Generate the `wasm-bindgen` JavaScript and WASM bindings.
 fn bindgen(outdir: &Path, artifact: &str, is_release: bool) {
-    let input = Path::new("../target/wasm32-unknown-unknown")
+    let input = Path::new("../target/wasm64-unknown-unknown")
         .join(if is_release { "release" } else { "debug" })
         .join(format!("{}.wasm", artifact));
 

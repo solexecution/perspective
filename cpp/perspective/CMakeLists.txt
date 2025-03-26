@@ -29,7 +29,7 @@ endif()
 set(CMAKE_MODULE_PATH "${PSP_CMAKE_MODULE_PATH}/modules" ${CMAKE_MODULE_PATH})
 set(MSVC_RUNTIME_LIBRARY MultiThreaded)
 
-option(PSP_WASM64 "Enable WASM Memory64 support" OFF)
+option(PSP_WASM64 "Enable WASM Memory64 support" ON)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(WIN32 ON)

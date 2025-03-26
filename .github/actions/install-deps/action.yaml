@@ -141,7 +141,7 @@ runs:
           if: ${{ inputs.rust == 'true' && inputs.arch != 'aarch64' }}
           with:
               toolchain: nightly-2025-02-01
-              targets: wasm32-unknown-unknown
+              targets: wasm64-unknown-unknown
               components: rustfmt, clippy, rust-src
 
         - name: Install rust (aarch64 OSX)

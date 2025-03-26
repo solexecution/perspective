@@ -55,7 +55,7 @@ fn main() {
         .args(["build"])
         .args(["-p", "perspective-bootstrap-runtime"])
         .args(["--lib"])
-        .args(["--target", "wasm32-unknown-unknown"])
+        .args(["--target", "wasm64-unknown-unknown"])
         .args(["--features", "env_target"])
         .args(["-Z", "build-std=std,panic_abort"])
         .args(["-Z", "build-std-features=panic_immediate_abort"])
@@ -66,7 +66,7 @@ fn main() {
         )
         .execute();
 
-    let inpath = Path::new("../target/wasm32-unknown-unknown")
+    let inpath = Path::new("../target/wasm64-unknown-unknown")
         .join(if args.release { "release" } else { "debug" })
         .join("perspective_bootstrap_runtime.wasm");
 
