@@ -14,197 +14,197 @@ name: "Install Dependencies"
 description: "Install and cache the project's myraid dependencies"
 
 inputs:
-    javascript:
-        default: "true"
-        description: "Install pnpm postinstall steps, playwright browsers and emsdk?"
-    arch:
-        default: ""
-        description: "Architecture"
-    manylinux:
-        default: "false"
-        description: "Deal with manylinux exceptions"
-    cpp:
-        default: "true"
-        description: "Install Boost and LLVM?"
-    rust:
-        default: "true"
-        description: "Install Rust toolchain?"
-    python:
-        default: "true"
-        description: "Install Python dependencies?"
-    playwright:
-        default: "false"
-        description: "Install browsers for playwright testing"
-    clean:
-        default: "false"
-        description: "Clean unused deps. This is helpful if we run out of HD but slow!"
-    skip_cache:
-        default: "false"
-        description: "Don't use cache from previous builds"
+  javascript:
+    default: "true"
+    description: "Install pnpm postinstall steps, playwright browsers and emsdk?"
+  arch:
+    default: ""
+    description: "Architecture"
+  manylinux:
+    default: "false"
+    description: "Deal with manylinux exceptions"
+  cpp:
+    default: "true"
+    description: "Install Boost and LLVM?"
+  rust:
+    default: "true"
+    description: "Install Rust toolchain?"
+  python:
+    default: "true"
+    description: "Install Python dependencies?"
+  playwright:
+    default: "false"
+    description: "Install browsers for playwright testing"
+  clean:
+    default: "false"
+    description: "Clean unused deps. This is helpful if we run out of HD but slow!"
+  skip_cache:
+    default: "false"
+    description: "Don't use cache from previous builds"
 
 runs:
-    using: "composite"
-    steps:
-        - name: Clean System
-          uses: AdityaGarg8/remove-unwanted-software@v4.1
-          if: ${{ inputs.clean == 'true' && runner.os != 'Windows' }}
-          with:
-              remove-android: "true"
-              remove-dotnet: "true"
-              remove-haskell: "true"
-              remove-codeql: "true"
+  using: "composite"
+  steps:
+    - name: Clean System
+      uses: AdityaGarg8/remove-unwanted-software@v4.1
+      if: ${{ inputs.clean == 'true' && runner.os != 'Windows' }}
+      with:
+        remove-android: "true"
+        remove-dotnet: "true"
+        remove-haskell: "true"
+        remove-codeql: "true"
 
-        # https://github.com/open-telemetry/opentelemetry-cpp/issues/2998
-        - name: Setup cmake
-          uses: jwlawson/actions-setup-cmake@v2
-          with:
-              cmake-version: "3.29.6"
+    # https://github.com/open-telemetry/opentelemetry-cpp/issues/2998
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: "3.29.6"
 
-        - name: Install pnpm
-          uses: pnpm/action-setup@v3
-          with:
-              version: 9
+    - name: Install pnpm
+      uses: pnpm/action-setup@v3
+      with:
+        version: 9
 
-        - name: Setup emsdk cache
-          uses: actions/cache@v4
-          id: emsdk-cache
-          if: ${{ inputs.skip_cache == 'false' && inputs.javascript == 'true' }}
-          with:
-              path: |
-                  ~/boost_1_82_0/
-                  ~/.emsdk/
-                  ~/.llvm/
-              key: ${{ runner.os }}-emsdk-${{ hashFiles('package.json') }}
-              restore-keys: |
-                  ${{ runner.os }}-emsdk-
+    - name: Setup emsdk cache
+      uses: actions/cache@v4
+      id: emsdk-cache
+      if: ${{ inputs.skip_cache == 'false' && inputs.javascript == 'true' }}
+      with:
+        path: |
+          ~/boost_1_82_0/
+          ~/.emsdk/
+          ~/.llvm/
+        key: ${{ runner.os }}-emsdk-${{ hashFiles('package.json') }}
+        restore-keys: |
+          ${{ runner.os }}-emsdk-
 
-        - name: Setup pip cache
-          uses: actions/cache@v4
-          if: ${{ inputs.skip_cache == 'false' && inputs.python == 'true' }}
-          with:
-              path: ~/.cache/pip
-              key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
-              restore-keys: |
-                  ${{ runner.os }}-pip-
+    - name: Setup pip cache
+      uses: actions/cache@v4
+      if: ${{ inputs.skip_cache == 'false' && inputs.python == 'true' }}
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
-        - name: Setup cargo cache
-          uses: actions/cache@v4
-          if: ${{ inputs.skip_cache == 'false' && inputs.rust == 'true' }}
-          with:
-              key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-              path: |
-                  ~/.cargo/bin/
-                  ~/.cargo/registry/index/
-                  ~/.cargo/registry/cache/
-                  ~/.cargo/git/db/
-              restore-keys: |
-                  ${{ runner.os }}-cargo-
+    - name: Setup cargo cache
+      uses: actions/cache@v4
+      if: ${{ inputs.skip_cache == 'false' && inputs.rust == 'true' }}
+      with:
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+        restore-keys: |
+          ${{ runner.os }}-cargo-
 
-        # - name: ccache
-        #   uses: hendrikmuhs/ccache-action@v1.2
-        #   if: ${{ inputs.skip_cache == 'false' }}
-        #   with:
-        #       key: ${{ github.job }}-${{ matrix.os }}
+    # - name: ccache
+    #   uses: hendrikmuhs/ccache-action@v1.2
+    #   if: ${{ inputs.skip_cache == 'false' }}
+    #   with:
+    #       key: ${{ github.job }}-${{ matrix.os }}
 
-        # https://github.com/apache/arrow/issues/38391
-        - if: ${{ runner.os == 'macOS' }}
-          shell: bash
-          run: echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion)" >> $GITHUB_ENV
+    # https://github.com/apache/arrow/issues/38391
+    - if: ${{ runner.os == 'macOS' }}
+      shell: bash
+      run: echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion)" >> $GITHUB_ENV
 
-        # Use python 3.9 from manylinu
-        - run: echo "/opt/python/cp39-cp39/bin" >> $GITHUB_PATH
-          shell: bash
-          if: ${{ runner.os == 'Linux' }}
+    # Use python 3.9 from manylinu
+    - run: echo "/opt/python/cp39-cp39/bin" >> $GITHUB_PATH
+      shell: bash
+      if: ${{ runner.os == 'Linux' }}
 
-        - name: Set up Python ${{ matrix.python-version }}
-          uses: actions/setup-python@v5
-          if: ${{ inputs.python == 'true' && runner.os != 'Linux' }}
-          with:
-              python-version: ${{ matrix.python-version }}
-              cache: "pip"
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      if: ${{ inputs.python == 'true' && runner.os != 'Linux' }}
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: "pip"
 
-        # - run: |
-        #       curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-        #       python get-pip.py --ignore-installed
-        #       pip debug --verbose
-        #   shell: bash
+    # - run: |
+    #       curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    #       python get-pip.py --ignore-installed
+    #       pip debug --verbose
+    #   shell: bash
 
-        - name: Use Node.js ${{ matrix.node-version }}
-          uses: actions/setup-node@v4
-          with:
-              node-version: ${{ matrix.node-version }}
-              cache: "pnpm"
-              cache-dependency-path: pnpm-lock.yaml
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: "pnpm"
+        cache-dependency-path: pnpm-lock.yaml
 
-        - name: Install rust
-          uses: dtolnay/rust-toolchain@nightly
-          if: ${{ inputs.rust == 'true' && inputs.arch != 'aarch64' }}
-          with:
-              toolchain: nightly
-              targets: wasm64-unknown-unknown
-              components: rustfmt, clippy, rust-src
+    - name: Install rust
+      uses: dtolnay/rust-toolchain@nightly
+      if: ${{ inputs.rust == 'true' && inputs.arch != 'aarch64' }}
+      with:
+        toolchain: nightly-2025-02-01
+        targets: wasm64-unknown-unknown
+        components: rustfmt, clippy, rust-src
 
-        - name: Install rust (aarch64 OSX)
-          uses: dtolnay/rust-toolchain@nightly
-          if: ${{ inputs.rust == 'true' && inputs.arch == 'aarch64' && runner.os == 'macOS' }}
-          with:
-              toolchain: nightly
-              targets: aarch64-apple-darwin
-              components: rustfmt, clippy, rust-src
+    - name: Install rust (aarch64 OSX)
+      uses: dtolnay/rust-toolchain@nightly
+      if: ${{ inputs.rust == 'true' && inputs.arch == 'aarch64' && runner.os == 'macOS' }}
+      with:
+        toolchain: nightly-2025-02-01
+        targets: aarch64-apple-darwin
+        components: rustfmt, clippy, rust-src
 
-        - name: Install rust (aarch64 Linux)
-          uses: dtolnay/rust-toolchain@nightly
-          if: ${{ inputs.rust == 'true' && inputs.arch == 'aarch64' && runner.os == 'Linux' }}
-          with:
-              toolchain: nightly
-              targets: aarch64-unknown-linux-gnu
-              components: rustfmt, clippy, rust-src
+    - name: Install rust (aarch64 Linux)
+      uses: dtolnay/rust-toolchain@nightly
+      if: ${{ inputs.rust == 'true' && inputs.arch == 'aarch64' && runner.os == 'Linux' }}
+      with:
+        toolchain: nightly-2025-02-01
+        targets: aarch64-unknown-linux-gnu
+        components: rustfmt, clippy, rust-src
 
-        # # TODO doesn't work.
-        # - name: Install LLVM 17
-        #   if: ${{ inputs.cpp == 'true' }}
-        #   uses: KyleMayes/install-llvm-action@v2
-        #   with:
-        #       version: "17"
-        #       directory: "./.llvm"
-        #       cached: true
+    # # TODO doesn't work.
+    # - name: Install LLVM 17
+    #   if: ${{ inputs.cpp == 'true' }}
+    #   uses: KyleMayes/install-llvm-action@v2
+    #   with:
+    #       version: "17"
+    #       directory: "./.llvm"
+    #       cached: true
 
-        - name: Install JS dependencies
-          shell: bash
-          if: ${{ inputs.javascript == 'true' && inputs.playwright == 'true' }}
-          run: pnpm install
+    - name: Install JS dependencies
+      shell: bash
+      if: ${{ inputs.javascript == 'true' && inputs.playwright == 'true' }}
+      run: pnpm install
 
-        - name: Install JS dependencies
-          shell: bash
-          if: ${{ inputs.javascript == 'false' || inputs.playwright == 'false'}}
-          run: pnpm install --ignore-scripts
+    - name: Install JS dependencies
+      shell: bash
+      if: ${{ inputs.javascript == 'false' || inputs.playwright == 'false'}}
+      run: pnpm install --ignore-scripts
 
-        - name: Install Python dependencies
-          shell: bash
-          if: ${{ inputs.python == 'true' && inputs.manylinux == 'false'  }}
-          run: python -m pip install -r rust/perspective-python/requirements.txt
+    - name: Install Python dependencies
+      shell: bash
+      if: ${{ inputs.python == 'true' && inputs.manylinux == 'false'  }}
+      run: python -m pip install -r rust/perspective-python/requirements.txt
 
-        - name: Install Python dependencies
-          shell: bash
-          if: ${{ inputs.python == 'true' && inputs.manylinux == 'true' }}
-          run: /opt/python/cp39-cp39/bin/python -m pip install -r rust/perspective-python/requirements.txt
+    - name: Install Python dependencies
+      shell: bash
+      if: ${{ inputs.python == 'true' && inputs.manylinux == 'true' }}
+      run: /opt/python/cp39-cp39/bin/python -m pip install -r rust/perspective-python/requirements.txt
 
-        - name: manylinux deps
-          shell: bash
-          run: |
-              if [ -x "$(command -v dnf)" ]; then
-                dnf install wget -y
-              fi
-          if: ${{ runner.os == 'Linux' && inputs.cpp == 'true' && inputs.javascript == 'false' }}
+    - name: manylinux deps
+      shell: bash
+      run: |
+        if [ -x "$(command -v dnf)" ]; then
+          dnf install wget -y
+        fi
+      if: ${{ runner.os == 'Linux' && inputs.cpp == 'true' && inputs.javascript == 'false' }}
 
-        # - name: Install CCache
-        #   shell: bash
-        #   run: sudo apt install -y ccache
-        #   if: ${{ runner.os == 'Linux' }}
+    # - name: Install CCache
+    #   shell: bash
+    #   run: sudo apt install -y ccache
+    #   if: ${{ runner.os == 'Linux' }}
 
-        # Arrow cannot install on windows without this
-        # https://stackoverflow.com/questions/22575662/filename-too-long-in-git-for-windows
-        # https://github.com/orgs/community/discussions/26952
-        - run: git config --system core.longpaths true
-          shell: pwsh
-          if: ${{ runner.os == 'Windows' }}
+    # Arrow cannot install on windows without this
+    # https://stackoverflow.com/questions/22575662/filename-too-long-in-git-for-windows
+    # https://github.com/orgs/community/discussions/26952
+    - run: git config --system core.longpaths true
+      shell: pwsh
+      if: ${{ runner.os == 'Windows' }}
